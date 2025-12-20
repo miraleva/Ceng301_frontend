@@ -1,4 +1,4 @@
-<%- include('../layout', { body: `
+<%- include('../partials/layout_start') %>
 
     <% if (success) { %>
         <div class="alert alert-success"><%= success %></div>
@@ -39,7 +39,7 @@
                 <% members.forEach(m => { 
                     // Match membership name
                     const memType = memberships.find(x => x.membership_id == m.membership_id);
-                    const age = new Date().getFullYear() - new Date(m.date_of_birth).getFullYear(); // Simple calc for SSR render, improved in JS
+                    const age = new Date().getFullYear() - new Date(m.date_of_birth).getFullYear(); // Simple calc
                 %>
                 <tr>
                     <td>#<%= m.member_id %></td>
@@ -47,7 +47,6 @@
                     <td><%= m.date_of_birth %></td>
                     <td>
                         <span class="age-display" data-dob="<%= m.date_of_birth %>">
-                            <!-- JS will update this accurately -->
                             <%= age %>
                         </span>
                     </td>
@@ -151,9 +150,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.age-display').forEach(span => {
                 const dob = span.getAttribute('data-dob');
-                span.textContent = calculateAge(dob);
+                // Ensure calculateAge is available or re-impl
+                if(typeof calculateAge === 'function') {
+                   span.textContent = calculateAge(dob);
+                }
             });
         });
     </script>
 
-` }) %>
+<%- include('../partials/layout_end') %>
