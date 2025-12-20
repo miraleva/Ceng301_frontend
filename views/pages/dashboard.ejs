@@ -1,17 +1,17 @@
-<%- include('../layout', { body: `
-    
+<%- include('../partials/layout_start') %>
+
     <div class="stats-grid">
         <div class="stat-card">
             <h3>Total Members</h3>
-            <div class="value">${stats.totalMembers}</div>
+            <div class="value"><%= stats.totalMembers %></div>
         </div>
         <div class="stat-card">
             <h3>Active Classes</h3>
-            <div class="value">${stats.activeClasses}</div>
+            <div class="value"><%= stats.activeClasses %></div>
         </div>
         <div class="stat-card">
             <h3>Monthly Revenue</h3>
-            <div class="value">$${stats.monthlyRevenue.toLocaleString()}</div>
+            <div class="value">$<%= stats.monthlyRevenue.toLocaleString() %></div>
         </div>
     </div>
 
@@ -20,4 +20,4 @@
         <p>Shortcuts and Recent Activity will appear here.</p>
     </div>
 
-` }) %>
+<%- include('../partials/layout_end') %>
