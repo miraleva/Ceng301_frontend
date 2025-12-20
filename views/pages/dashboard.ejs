@@ -1,0 +1,23 @@
+<%- include('../layout', { body: `
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Members</h3>
+            <div class="value">${stats.totalMembers}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Active Classes</h3>
+            <div class="value">${stats.activeClasses}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Monthly Revenue</h3>
+            <div class="value">$${stats.monthlyRevenue.toLocaleString()}</div>
+        </div>
+    </div>
+
+    <!-- Placeholder for Recent Activity or other dashboard widgets -->
+    <div style="background: white; padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border-color); text-align: center; color: #6b7280;">
+        <p>Shortcuts and Recent Activity will appear here.</p>
+    </div>
+
+` }) %>
