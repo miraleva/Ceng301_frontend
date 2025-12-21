@@ -156,7 +156,94 @@ app.get('/trainers', (req, res) => res.send('Trainers Page - Coming Soon'));
 app.get('/classes', (req, res) => res.send('Classes Page - Coming Soon'));
 app.get('/enrollments', (req, res) => res.send('Enrollments Page - Coming Soon'));
 app.get('/payments', (req, res) => res.send('Payments Page - Coming Soon'));
-app.get('/reports', (req, res) => res.send('Reports Page - Coming Soon'));
+// --- REPORTS & SP DEMO ROUTES ---
+app.get('/reports', (req, res) => {
+    const spResult = req.query.sp_result ? JSON.parse(req.query.sp_result) : null;
+
+    // --- Mock SQL Computations ---
+
+    // 1. Oldest Member (ORDER BY date_of_birth ASC LIMIT 1)
+    const oldestMember = [...members].sort((a, b) => new Date(a.date_of_birth) - new Date(b.date_of_birth))[0];
+
+    // 2. Most Popular Class (Count enrollments GROUP BY class_id)
+    const classCounts = {};
+    enrollments.forEach(e => { classCounts[e.class_id] = (classCounts[e.class_id] || 0) + 1; });
+    const sortedClasses = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
+    const popularClassId = sortedClasses.length > 0 ? parseInt(sortedClasses[0][0]) : null;
+    const popularClass = popularClassId ? classes.find(c => c.class_id === popularClassId) : null;
+    const popularClassCount = sortedClasses.length > 0 ? sortedClasses[0][1] : 0;
+
+    // 3. Monthly Revenue (Simple sum for demo)
+    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+
+    // 4. Members by Membership Type (GROUP BY membership_id)
+    const membershipCounts = {};
+    members.forEach(m => {
+        const mName = memberships.find(ms => ms.membership_id === m.membership_id)?.membership_name || 'Unknown';
+        membershipCounts[mName] = (membershipCounts[mName] || 0) + 1;
+    });
+
+    // 5. Trainer Workload (Count classes GROUP BY trainer_id)
+    const trainerWorkload = trainers.map(t => {
+        const count = classes.filter(c => c.trainer_id === t.trainer_id).length;
+        return { name: `${t.f_name} ${t.l_name}`, count };
+    });
+
+    // 6. Inactive Members (Left Join Enrollments where enrollment is null)
+    // Simply: Members who have 0 enrollments
+    const inactiveMembers = members.filter(m => !enrollments.some(e => e.member_id === m.member_id));
+
+    // Prepare report data object
+    const reportData = {
+        oldestMember,
+        popularClass: popularClass ? { ...popularClass, count: popularClassCount } : null,
+        totalRevenue,
+        membershipCounts,
+        trainerWorkload,
+        inactiveMembers
+    };
+
+    res.render('pages/reports', {
+        title: 'Reports',
+        path: '/reports',
+        members,
+        reportData,
+        spResult
+    });
+});
+
+// Mock Stored Procedure: calculate_member_lifetime_value(member_id)
+app.post('/reports/sp-demo', (req, res) => {
+    const { member_id } = req.body;
+    const memberIdInt = parseInt(member_id);
+    const member = members.find(m => m.member_id === memberIdInt);
+
+    if (!member) {
+        return res.redirect('/reports');
+    }
+
+    // Logic mimicking PL/pgSQL function
+    const memberPayments = payments.filter(p => p.member_id === memberIdInt);
+    const totalPaid = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+    const paymentCount = memberPayments.length;
+    const lastPayment = memberPayments.length > 0
+        ? memberPayments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0].payment_date
+        : 'N/A';
+
+    const result = {
+        member_name: `${member.f_name} ${member.l_name}`,
+        total_paid: totalPaid,
+        payment_count: paymentCount,
+        last_payment_date: lastPayment
+    };
+
+    // Redirect with result (simulating "Output" param return)
+    res.redirect(`/reports?sp_result=${encodeURIComponent(JSON.stringify(result))}`);
+});
+
+app.listen(port, () => {
+    console.log(`Gym Management System running at http://localhost:${port}`);
+});
 
 app.listen(port, () => {
     console.log(`Gym Management System running at http://localhost:${port}`);
