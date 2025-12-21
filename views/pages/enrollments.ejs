@@ -1,0 +1,117 @@
+<%- include('../partials/layout_start') %>
+
+    <% if (success) { %>
+        <div class="alert alert-success"><%= success %></div>
+    <% } %>
+    <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="table-actions">
+        <div class="left-tools">
+            <h2 style="font-size: 1.25rem; font-weight: 600;">Class Enrollments</h2>
+        </div>
+        <button class="btn btn-primary btn-add" data-modal-target="enrollmentModal">
+            + New Enrollment
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Enrollment ID</th>
+                    <th>Member Name</th>
+                    <th>Class Name</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% enrollments.forEach(e => { 
+                   const member = members.find(m => m.member_id == e.member_id);
+                   const cls = classes.find(c => c.class_id == e.class_id);
+                %>
+                <tr>
+                    <td>#<%= e.enrollment_id %></td>
+                    <td><%= member ? (member.f_name + ' ' + member.l_name) : 'Unknown Member' %></td>
+                    <td><%= cls ? cls.class_name : 'Unknown Class' %></td>
+                    <td><%= e.enrollment_date %></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger btn-delete" 
+                                data-modal-target="deleteModal"
+                                data-id="<%= e.enrollment_id %>">
+                            Drop
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+                <% if(enrollments.length === 0) { %>
+                    <tr><td colspan="5" style="text-align:center">No active enrollments found.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Enrollment Modal -->
+    <div id="enrollmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Enrollment</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form action="/enrollments/create" method="POST" data-resource="enrollments">
+                
+                <div class="form-group">
+                    <label>Select Member</label>
+                    <select name="member_id" class="form-control" required>
+                        <% members.forEach(m => { %>
+                            <option value="<%= m.member_id %>"><%= m.f_name %> <%= m.l_name %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Class</label>
+                    <select name="class_id" class="form-control" required>
+                        <% classes.forEach(c => { %>
+                            <option value="<%= c.class_id %>"><%= c.class_name %> (<%= c.schedule_time %>)</option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Enrollment Date</label>
+                    <input type="date" name="enrollment_date" class="form-control" 
+                           value="<%= new Date().toISOString().split('T')[0] %>">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Enroll</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Confirm Drop</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <p>Are you sure you want to remove this enrollment?</p>
+            <form action="/enrollments/delete" method="POST">
+                <input type="hidden" name="enrollment_id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Drop Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+
+<%- include('../partials/layout_end') %>
