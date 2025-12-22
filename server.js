@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Middleware to parse body
 app.use(express.urlencoded({ extended: true }));
 
-// Mock Data
+// --- MOCK DATA ---
 let memberships = [
     { membership_id: 1, membership_name: 'Silver', duration: 30, price: 300 },
     { membership_id: 2, membership_name: 'Gold', duration: 90, price: 800 },
@@ -26,18 +26,39 @@ let members = [
     { member_id: 3, f_name: 'Ali', l_name: 'Veli', date_of_birth: '2000-01-10', membership_id: 3, phone: '555-0103', email: 'ali@example.com' }
 ];
 
+let trainers = [
+    { trainer_id: 1, f_name: 'Mike', l_name: 'Tyson', specialization: 'Boxing', phone: '555-9999', email: 'mike@gym.com' },
+    { trainer_id: 2, f_name: 'Sarah', l_name: 'Connor', specialization: 'Cardio', phone: '555-8888', email: 'sarah@gym.com' }
+];
+
+let classes = [
+    { class_id: 1, class_name: 'Morning Boxing', schedule_time: '08:00 AM', capacity: 20, trainer_id: 1 },
+    { class_id: 2, class_name: 'Evening Yoga', schedule_time: '18:00 PM', capacity: 15, trainer_id: 2 }
+];
+
+let enrollments = [
+    { enrollment_id: 1, member_id: 1, class_id: 1, enrollment_date: '2025-12-01' },
+    { enrollment_id: 2, member_id: 2, class_id: 1, enrollment_date: '2025-12-02' }
+];
+
+let payments = [
+    { payment_id: 1, member_id: 1, amount: 800, payment_date: '2025-11-20', method: 'Card' },
+    { payment_id: 2, member_id: 2, amount: 300, payment_date: '2025-11-21', method: 'Cash' }
+];
+
 const dashboardStats = {
     totalMembers: members.length,
-    activeClasses: 12,
+    activeClasses: classes.length,
     monthlyRevenue: 15400
 };
 
-// Helpers
+// --- HELPERS ---
 const getNextId = (arr, idField) => {
     return arr.length > 0 ? Math.max(...arr.map(item => item[idField])) + 1 : 1;
 };
 
-// Routes
+// --- ROUTES ---
+
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
@@ -47,10 +68,11 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-    // Recalculate stats for demo dynamic feel
+    // Recalculate stats
     const currentStats = {
-        ...dashboardStats,
-        totalMembers: members.length
+        totalMembers: members.length,
+        activeClasses: classes.length,
+        monthlyRevenue: payments.reduce((acc, p) => acc + p.amount, 0)
     };
     res.render('pages/dashboard', {
         title: 'Dashboard',
@@ -61,8 +83,8 @@ app.get('/dashboard', (req, res) => {
 
 // --- MEMBERS ROUTES ---
 app.get('/members', (req, res) => {
-    const error = req.query.error;
-    const success = req.query.success;
+    const error = req.query.error || null;
+    const success = req.query.success || null;
     res.render('pages/members', {
         title: 'Members',
         path: '/members',
@@ -101,14 +123,22 @@ app.post('/members/update', (req, res) => {
 
 app.post('/members/delete', (req, res) => {
     const { member_id } = req.body;
+    // Check constraints
+    const hasEnrollments = enrollments.some(e => e.member_id == member_id);
+    const hasPayments = payments.some(p => p.member_id == member_id);
+
+    if (hasEnrollments || hasPayments) {
+        return res.redirect('/members?error=Cannot delete member with associated enrollments or payments.');
+    }
+
     members = members.filter(m => m.member_id != member_id);
     res.redirect('/members?success=Deleted Member Successfully');
 });
 
 // --- MEMBERSHIPS ROUTES ---
 app.get('/memberships', (req, res) => {
-    const error = req.query.error;
-    const success = req.query.success;
+    const error = req.query.error || null;
+    const success = req.query.success || null;
     res.render('pages/memberships', {
         title: 'Memberships',
         path: '/memberships',
@@ -140,7 +170,6 @@ app.post('/memberships/update', (req, res) => {
 
 app.post('/memberships/delete', (req, res) => {
     const { membership_id } = req.body;
-    // Check constraint: Membership 1:N Member
     const isUsed = members.some(m => m.membership_id == membership_id);
     if (isUsed) {
         return res.redirect('/memberships?error=Cannot delete membership assigned to members.');
@@ -149,14 +178,280 @@ app.post('/memberships/delete', (req, res) => {
     res.redirect('/memberships?success=Deleted Membership Successfully');
 });
 
-// Placeholder routes for future steps
-app.get('/trainers', (req, res) => res.render('pages/trainers', { title: 'Trainers', path: '/trainers' })); // Will fail if view not exists, but we'll add it later or revert to send string
-// For now, keep simple string responses for unfinished routes to avoid crash if user clicks
-app.get('/trainers', (req, res) => res.send('Trainers Page - Coming Soon'));
-app.get('/classes', (req, res) => res.send('Classes Page - Coming Soon'));
-app.get('/enrollments', (req, res) => res.send('Enrollments Page - Coming Soon'));
-app.get('/payments', (req, res) => res.send('Payments Page - Coming Soon'));
-app.get('/reports', (req, res) => res.send('Reports Page - Coming Soon'));
+// --- TRAINERS ROUTES ---
+app.get('/trainers', (req, res) => {
+    const error = req.query.error || null;
+    const success = req.query.success || null;
+    res.render('pages/trainers', {
+        title: 'Trainers',
+        path: '/trainers',
+        trainers,
+        error,
+        success
+    });
+});
+
+app.post('/trainers/create', (req, res) => {
+    const { f_name, l_name, specialization, phone, email } = req.body;
+    const newItem = {
+        trainer_id: getNextId(trainers, 'trainer_id'),
+        f_name, l_name, specialization, phone, email
+    };
+    trainers.push(newItem);
+    res.redirect('/trainers?success=Created Trainer Successfully');
+});
+
+app.post('/trainers/update', (req, res) => {
+    const { trainer_id, f_name, l_name, specialization, phone, email } = req.body;
+    const index = trainers.findIndex(t => t.trainer_id == trainer_id);
+    if (index !== -1) {
+        trainers[index] = { ...trainers[index], f_name, l_name, specialization, phone, email };
+    }
+    res.redirect('/trainers?success=Updated Trainer Successfully');
+});
+
+app.post('/trainers/delete', (req, res) => {
+    const { trainer_id } = req.body;
+    const isUsed = classes.some(c => c.trainer_id == trainer_id);
+    if (isUsed) {
+        return res.redirect('/trainers?error=Cannot delete trainer assigned to classes.');
+    }
+    trainers = trainers.filter(t => t.trainer_id != trainer_id);
+    res.redirect('/trainers?success=Deleted Trainer Successfully');
+});
+
+// --- CLASSES ROUTES ---
+app.get('/classes', (req, res) => {
+    const error = req.query.error || null;
+    const success = req.query.success || null;
+    res.render('pages/classes', {
+        title: 'Classes',
+        path: '/classes',
+        classes,
+        trainers,
+        error,
+        success
+    });
+});
+
+app.post('/classes/create', (req, res) => {
+    const { class_name, schedule_time, capacity, trainer_id } = req.body;
+
+    const trainerExists = trainers.some(t => t.trainer_id == trainer_id);
+    if (!trainerExists) {
+        return res.redirect('/classes?error=Invalid Trainer Selected');
+    }
+
+    const newItem = {
+        class_id: getNextId(classes, 'class_id'),
+        class_name,
+        schedule_time,
+        capacity: parseInt(capacity) || 0,
+        trainer_id: parseInt(trainer_id)
+    };
+    classes.push(newItem);
+    res.redirect('/classes?success=Created Class Successfully');
+});
+
+app.post('/classes/update', (req, res) => {
+    const { class_id, class_name, schedule_time, capacity, trainer_id } = req.body;
+    const index = classes.findIndex(c => c.class_id == class_id);
+    if (index !== -1) {
+        classes[index] = {
+            ...classes[index],
+            class_name,
+            schedule_time,
+            capacity: parseInt(capacity) || 0,
+            trainer_id: parseInt(trainer_id)
+        };
+    }
+    res.redirect('/classes?success=Updated Class Successfully');
+});
+
+app.post('/classes/delete', (req, res) => {
+    const { class_id } = req.body;
+    const isUsed = enrollments.some(e => e.class_id == class_id);
+    if (isUsed) {
+        return res.redirect('/classes?error=Cannot delete class with active enrollments.');
+    }
+    classes = classes.filter(c => c.class_id != class_id);
+    res.redirect('/classes?success=Deleted Class Successfully');
+});
+
+// --- ENROLLMENTS ROUTES ---
+app.get('/enrollments', (req, res) => {
+    const error = req.query.error || null;
+    const success = req.query.success || null;
+    res.render('pages/enrollments', {
+        title: 'Enrollments',
+        path: '/enrollments',
+        enrollments,
+        members,
+        classes,
+        error,
+        success
+    });
+});
+
+app.post('/enrollments/create', (req, res) => {
+    const { member_id, class_id, enrollment_date } = req.body;
+
+    const memberExists = members.some(m => m.member_id == member_id);
+    const classExists = classes.some(c => c.class_id == class_id);
+
+    if (!memberExists || !classExists) {
+        return res.redirect('/enrollments?error=Invalid Member or Class');
+    }
+
+    const exists = enrollments.some(e => e.member_id == member_id && e.class_id == class_id);
+    if (exists) {
+        return res.redirect('/enrollments?error=Member is already enrolled in this class');
+    }
+
+    const newItem = {
+        enrollment_id: getNextId(enrollments, 'enrollment_id'),
+        member_id: parseInt(member_id),
+        class_id: parseInt(class_id),
+        enrollment_date: enrollment_date || new Date().toISOString().split('T')[0]
+    };
+    enrollments.push(newItem);
+    res.redirect('/enrollments?success=Member Enrolled Successfully');
+});
+
+app.post('/enrollments/delete', (req, res) => {
+    const { enrollment_id } = req.body;
+    enrollments = enrollments.filter(e => e.enrollment_id != enrollment_id);
+    res.redirect('/enrollments?success=Enrollment Removed Successfully');
+});
+
+// --- PAYMENTS ROUTES ---
+app.get('/payments', (req, res) => {
+    const error = req.query.error || null;
+    const success = req.query.success || null;
+    res.render('pages/payments', {
+        title: 'Payments',
+        path: '/payments',
+        payments,
+        members,
+        error,
+        success
+    });
+});
+
+app.post('/payments/create', (req, res) => {
+    const { member_id, amount, payment_date, method } = req.body;
+
+    const memberExists = members.some(m => m.member_id == member_id);
+    if (!memberExists) return res.redirect('/payments?error=Invalid Member');
+
+    const newItem = {
+        payment_id: getNextId(payments, 'payment_id'),
+        member_id: parseInt(member_id),
+        amount: parseFloat(amount),
+        payment_date: payment_date || new Date().toISOString().split('T')[0],
+        method
+    };
+    payments.push(newItem);
+    res.redirect('/payments?success=Payment Recorded Successfully');
+});
+
+app.post('/payments/update', (req, res) => {
+    const { payment_id, member_id, amount, payment_date, method } = req.body;
+    const index = payments.findIndex(p => p.payment_id == payment_id);
+    if (index !== -1) {
+        payments[index] = {
+            ...payments[index],
+            member_id: parseInt(member_id),
+            amount: parseFloat(amount),
+            payment_date,
+            method
+        };
+    }
+    res.redirect('/payments?success=Payment Updated Successfully');
+});
+
+app.post('/payments/delete', (req, res) => {
+    const { payment_id } = req.body;
+    payments = payments.filter(p => p.payment_id != payment_id);
+    res.redirect('/payments?success=Payment Deleted Successfully');
+});
+
+// --- REPORTS ROUTES ---
+app.get('/reports', (req, res) => {
+    const spResult = req.query.sp_result ? JSON.parse(req.query.sp_result) : null;
+    const error = req.query.error || null;
+    const success = req.query.success || null;
+
+    // Computations
+    const oldestMember = [...members].sort((a, b) => new Date(a.date_of_birth) - new Date(b.date_of_birth))[0];
+
+    const classCounts = {};
+    enrollments.forEach(e => { classCounts[e.class_id] = (classCounts[e.class_id] || 0) + 1; });
+    const sortedClasses = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
+    const popularClassId = sortedClasses.length > 0 ? parseInt(sortedClasses[0][0]) : null;
+    const popularClass = popularClassId ? classes.find(c => c.class_id === popularClassId) : null;
+    const popularClassCount = sortedClasses.length > 0 ? sortedClasses[0][1] : 0;
+
+    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+
+    const membershipCounts = {};
+    members.forEach(m => {
+        const mName = memberships.find(ms => ms.membership_id === m.membership_id)?.membership_name || 'Unknown';
+        membershipCounts[mName] = (membershipCounts[mName] || 0) + 1;
+    });
+
+    const trainerWorkload = trainers.map(t => {
+        const count = classes.filter(c => c.trainer_id === t.trainer_id).length;
+        return { name: `${t.f_name} ${t.l_name}`, count };
+    });
+
+    const inactiveMembers = members.filter(m => !enrollments.some(e => e.member_id === m.member_id));
+
+    const reportData = {
+        oldestMember,
+        popularClass: popularClass ? { ...popularClass, count: popularClassCount } : null,
+        totalRevenue,
+        membershipCounts,
+        trainerWorkload,
+        inactiveMembers
+    };
+
+    res.render('pages/reports', {
+        title: 'Reports',
+        path: '/reports',
+        members,
+        reportData,
+        spResult,
+        error,
+        success
+    });
+});
+
+app.post('/reports/sp-demo', (req, res) => {
+    const { member_id } = req.body;
+    const memberIdInt = parseInt(member_id);
+    const member = members.find(m => m.member_id === memberIdInt);
+
+    if (!member) {
+        return res.redirect('/reports');
+    }
+
+    const memberPayments = payments.filter(p => p.member_id === memberIdInt);
+    const totalPaid = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+    const paymentCount = memberPayments.length;
+    const lastPayment = memberPayments.length > 0
+        ? memberPayments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0].payment_date
+        : 'N/A';
+
+    const result = {
+        member_name: `${member.f_name} ${member.l_name}`,
+        total_paid: totalPaid,
+        payment_count: paymentCount,
+        last_payment_date: lastPayment
+    };
+
+    res.redirect(`/reports?sp_result=${encodeURIComponent(JSON.stringify(result))}`);
+});
 
 app.listen(port, () => {
     console.log(`Gym Management System running at http://localhost:${port}`);
