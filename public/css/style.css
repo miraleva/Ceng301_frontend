@@ -347,7 +347,15 @@ body.login-page {
     margin-top: 1.5rem;
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.modal-footer .btn {
+    min-width: 100px;
+    justify-content: center;
+    font-size: 1rem;
 }
 
 /* --- Alerts --- */
