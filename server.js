@@ -74,10 +74,45 @@ app.get('/dashboard', (req, res) => {
         activeClasses: classes.length,
         monthlyRevenue: payments.reduce((acc, p) => acc + p.amount, 0)
     };
+
+    // --- RECENT ACTIVITY LOGIC ---
+    // 1. Get recent payments (last 5)
+    const recentPayments = [...payments]
+        .sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date) || b.payment_id - a.payment_id)
+        .slice(0, 5)
+        .map(p => {
+            const member = members.find(m => m.member_id === p.member_id);
+            return {
+                type: 'Payment',
+                date: p.payment_date,
+                text: `${member ? member.f_name + ' ' + member.l_name : 'Unknown Member'} paid $${p.amount}`
+            };
+        });
+
+    // 2. Get recent enrollments (last 5)
+    const recentEnrollments = [...enrollments]
+        .sort((a, b) => new Date(b.enrollment_date) - new Date(a.enrollment_date) || b.enrollment_id - a.enrollment_id)
+        .slice(0, 5)
+        .map(e => {
+            const member = members.find(m => m.member_id === e.member_id);
+            const cls = classes.find(c => c.class_id === e.class_id);
+            return {
+                type: 'Enrollment',
+                date: e.enrollment_date,
+                text: `${member ? member.f_name + ' ' + member.l_name : 'Unknown Member'} enrolled in ${cls ? cls.class_name : 'Class'}`
+            };
+        });
+
+    // 3. Combine and Sort
+    const recentActivity = [...recentPayments, ...recentEnrollments]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
+
     res.render('pages/dashboard', {
         title: 'Dashboard',
         path: '/dashboard',
-        stats: currentStats
+        stats: currentStats,
+        recentActivity
     });
 });
 
