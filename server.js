@@ -378,7 +378,14 @@ app.post('/payments/delete', (req, res) => {
 
 // --- REPORTS ROUTES ---
 app.get('/reports', (req, res) => {
-    const spResult = req.query.sp_result ? JSON.parse(req.query.sp_result) : null;
+    let spResult = null;
+    if (req.query.sp_result) {
+        try {
+            spResult = JSON.parse(req.query.sp_result);
+        } catch (e) {
+            console.error("Invalid sp_result JSON:", e);
+        }
+    }
     const error = req.query.error || null;
     const success = req.query.success || null;
 
