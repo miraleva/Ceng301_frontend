@@ -34,9 +34,9 @@
                 %>
                 <tr>
                     <td>#<%= e.enrollment_id %></td>
-                    <td><%= member ? (member.f_name + ' ' + member.l_name) : 'Unknown Member' %></td>
+                    <td><%= member ? (member.first_name + ' ' + member.last_name) : 'Unknown Member' %></td>
                     <td><%= cls ? cls.class_name : 'Unknown Class' %></td>
-                    <td><%= e.enrollment_date %></td>
+                    <td><%= formatDate(e.enrollment_date) %></td>
                     <td>
                         <button class="btn btn-sm btn-danger btn-delete" 
                                 data-modal-target="deleteModal"
@@ -66,7 +66,7 @@
                     <label>Select Member</label>
                     <select name="member_id" class="form-control" required>
                         <% members.forEach(m => { %>
-                            <option value="<%= m.member_id %>"><%= m.f_name %> <%= m.l_name %></option>
+                            <option value="<%= m.member_id %>"><%= m.first_name %> <%= m.last_name %></option>
                         <% }) %>
                     </select>
                 </div>
@@ -75,7 +75,7 @@
                     <label>Select Class</label>
                     <select name="class_id" class="form-control" required>
                         <% classes.forEach(c => { %>
-                            <option value="<%= c.class_id %>"><%= c.class_name %> (<%= c.schedule_time %>)</option>
+                            <option value="<%= c.class_id %>"><%= c.class_name %> (<%= c.schedule %>)</option>
                         <% }) %>
                     </select>
                 </div>

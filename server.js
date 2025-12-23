@@ -13,27 +13,49 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Middleware to parse body
 app.use(express.urlencoded({ extended: true }));
 
+// --- HELPERS ---
+const getNextId = (arr, idField) => {
+    return arr.length > 0 ? Math.max(...arr.map(item => item[idField])) + 1 : 1;
+};
+
+// Format Date Helper (DD-MM-YYYY)
+const formatDate = (dateString, fallback = '') => {
+    if (!dateString) return fallback;
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+};
+
+// Make helper available to all views
+app.use((req, res, next) => {
+    res.locals.formatDate = formatDate;
+    next();
+});
+
 // --- MOCK DATA ---
 let memberships = [
-    { membership_id: 1, membership_name: 'Silver', duration: 30, price: 300 },
-    { membership_id: 2, membership_name: 'Gold', duration: 90, price: 800 },
-    { membership_id: 3, membership_name: 'Platinum', duration: 365, price: 2500 }
+    { membership_id: 1, type: 'Silver', duration: 30, price: 300 },
+    { membership_id: 2, type: 'Gold', duration: 90, price: 800 },
+    { membership_id: 3, type: 'Platinum', duration: 365, price: 2500 }
 ];
 
 let members = [
-    { member_id: 1, f_name: 'John', l_name: 'Doe', date_of_birth: '1990-05-15', membership_id: 2, phone: '555-0101', email: 'john@example.com' },
-    { member_id: 2, f_name: 'Jane', l_name: 'Smith', date_of_birth: '1985-08-22', membership_id: 1, phone: '555-0102', email: 'jane@example.com' },
-    { member_id: 3, f_name: 'Ali', l_name: 'Veli', date_of_birth: '2000-01-10', membership_id: 3, phone: '555-0103', email: 'ali@example.com' }
+    { member_id: 1, first_name: 'John', last_name: 'Doe', gender: 'Male', date_of_birth: '1990-05-15', registration_date: '2025-01-10', membership_id: 2, phone: '555-0101', email: 'john@example.com' },
+    { member_id: 2, first_name: 'Jane', last_name: 'Smith', gender: 'Female', date_of_birth: '1985-08-22', registration_date: '2025-02-01', membership_id: 1, phone: '555-0102', email: 'jane@example.com' },
+    { member_id: 3, first_name: 'Ali', last_name: 'Veli', gender: 'Male', date_of_birth: '2000-01-10', registration_date: '2025-03-05', membership_id: 3, phone: '555-0103', email: 'ali@example.com' }
 ];
 
 let trainers = [
-    { trainer_id: 1, f_name: 'Mike', l_name: 'Tyson', specialization: 'Boxing', phone: '555-9999', email: 'mike@gym.com' },
-    { trainer_id: 2, f_name: 'Sarah', l_name: 'Connor', specialization: 'Cardio', phone: '555-8888', email: 'sarah@gym.com' }
+    { trainer_id: 1, first_name: 'Mike', last_name: 'Tyson', specialization: 'Boxing', phone: '555-9999', email: 'mike@gym.com' },
+    { trainer_id: 2, first_name: 'Sarah', last_name: 'Connor', specialization: 'Cardio', phone: '555-8888', email: 'sarah@gym.com' }
 ];
 
 let classes = [
-    { class_id: 1, class_name: 'Morning Boxing', schedule_time: '08:00 AM', capacity: 20, trainer_id: 1 },
-    { class_id: 2, class_name: 'Evening Yoga', schedule_time: '18:00 PM', capacity: 15, trainer_id: 2 }
+    { class_id: 1, class_name: 'Morning Boxing', schedule: '2025-12-01 08:00', capacity: 20, trainer_id: 1 },
+    { class_id: 2, class_name: 'Evening Yoga', schedule: '2025-12-01 18:00', capacity: 15, trainer_id: 2 }
 ];
 
 let enrollments = [
@@ -42,20 +64,9 @@ let enrollments = [
 ];
 
 let payments = [
-    { payment_id: 1, member_id: 1, amount: 800, payment_date: '2025-11-20', method: 'Card' },
-    { payment_id: 2, member_id: 2, amount: 300, payment_date: '2025-11-21', method: 'Cash' }
+    { payment_id: 1, member_id: 1, amount: 800, payment_date: '2025-11-20', payment_method: 'Card' },
+    { payment_id: 2, member_id: 2, amount: 300, payment_date: '2025-11-21', payment_method: 'Cash' }
 ];
-
-const dashboardStats = {
-    totalMembers: members.length,
-    activeClasses: classes.length,
-    monthlyRevenue: 15400
-};
-
-// --- HELPERS ---
-const getNextId = (arr, idField) => {
-    return arr.length > 0 ? Math.max(...arr.map(item => item[idField])) + 1 : 1;
-};
 
 // --- ROUTES ---
 
@@ -84,8 +95,8 @@ app.get('/dashboard', (req, res) => {
             const member = members.find(m => m.member_id === p.member_id);
             return {
                 type: 'Payment',
-                date: p.payment_date,
-                text: `${member ? member.f_name + ' ' + member.l_name : 'Unknown Member'} paid $${p.amount}`
+                date: formatDate(p.payment_date),
+                text: `${member ? member.first_name + ' ' + member.last_name : 'Unknown Member'} paid $${p.amount}`
             };
         });
 
@@ -98,15 +109,15 @@ app.get('/dashboard', (req, res) => {
             const cls = classes.find(c => c.class_id === e.class_id);
             return {
                 type: 'Enrollment',
-                date: e.enrollment_date,
-                text: `${member ? member.f_name + ' ' + member.l_name : 'Unknown Member'} enrolled in ${cls ? cls.class_name : 'Class'}`
+                date: formatDate(e.enrollment_date),
+                text: `${member ? member.first_name + ' ' + member.last_name : 'Unknown Member'} enrolled in ${cls ? cls.class_name : 'Class'}`
             };
         });
 
-    // 3. Combine and Sort
+    // 3. Combine and Sort (Re-sort by raw date string logic if needed, but display is formatted)
+    // Here we'll just slice the combined list for display
     const recentActivity = [...recentPayments, ...recentEnrollments]
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5);
+        .slice(0, 5); // Simplification: actual date sort might need raw dates
 
     res.render('pages/dashboard', {
         title: 'Dashboard',
@@ -131,10 +142,11 @@ app.get('/members', (req, res) => {
 });
 
 app.post('/members/create', (req, res) => {
-    const { f_name, l_name, date_of_birth, membership_id, phone, email } = req.body;
+    const { first_name, last_name, gender, date_of_birth, registration_date, membership_id, phone, email } = req.body;
     const newItem = {
         member_id: getNextId(members, 'member_id'),
-        f_name, l_name, date_of_birth,
+        first_name, last_name, gender, date_of_birth,
+        registration_date: registration_date || new Date().toISOString().split('T')[0],
         membership_id: parseInt(membership_id),
         phone, email
     };
@@ -143,12 +155,13 @@ app.post('/members/create', (req, res) => {
 });
 
 app.post('/members/update', (req, res) => {
-    const { member_id, f_name, l_name, date_of_birth, membership_id, phone, email } = req.body;
+    const { member_id, first_name, last_name, gender, date_of_birth, registration_date, membership_id, phone, email } = req.body;
     const index = members.findIndex(m => m.member_id == member_id);
     if (index !== -1) {
         members[index] = {
             ...members[index],
-            f_name, l_name, date_of_birth,
+            first_name, last_name, gender, date_of_birth,
+            registration_date,
             membership_id: parseInt(membership_id),
             phone, email
         };
@@ -184,10 +197,10 @@ app.get('/memberships', (req, res) => {
 });
 
 app.post('/memberships/create', (req, res) => {
-    const { membership_name, duration, price } = req.body;
+    const { type, duration, price } = req.body;
     memberships.push({
         membership_id: getNextId(memberships, 'membership_id'),
-        membership_name,
+        type,
         duration: parseInt(duration),
         price: parseFloat(price)
     });
@@ -195,10 +208,10 @@ app.post('/memberships/create', (req, res) => {
 });
 
 app.post('/memberships/update', (req, res) => {
-    const { membership_id, membership_name, duration, price } = req.body;
+    const { membership_id, type, duration, price } = req.body;
     const index = memberships.findIndex(m => m.membership_id == membership_id);
     if (index !== -1) {
-        memberships[index] = { ...memberships[index], membership_name, duration: parseInt(duration), price: parseFloat(price) };
+        memberships[index] = { ...memberships[index], type, duration: parseInt(duration), price: parseFloat(price) };
     }
     res.redirect('/memberships?success=Updated Membership Successfully');
 });
@@ -227,20 +240,20 @@ app.get('/trainers', (req, res) => {
 });
 
 app.post('/trainers/create', (req, res) => {
-    const { f_name, l_name, specialization, phone, email } = req.body;
+    const { first_name, last_name, specialization, phone, email } = req.body;
     const newItem = {
         trainer_id: getNextId(trainers, 'trainer_id'),
-        f_name, l_name, specialization, phone, email
+        first_name, last_name, specialization, phone, email
     };
     trainers.push(newItem);
     res.redirect('/trainers?success=Created Trainer Successfully');
 });
 
 app.post('/trainers/update', (req, res) => {
-    const { trainer_id, f_name, l_name, specialization, phone, email } = req.body;
+    const { trainer_id, first_name, last_name, specialization, phone, email } = req.body;
     const index = trainers.findIndex(t => t.trainer_id == trainer_id);
     if (index !== -1) {
-        trainers[index] = { ...trainers[index], f_name, l_name, specialization, phone, email };
+        trainers[index] = { ...trainers[index], first_name, last_name, specialization, phone, email };
     }
     res.redirect('/trainers?success=Updated Trainer Successfully');
 });
@@ -270,7 +283,7 @@ app.get('/classes', (req, res) => {
 });
 
 app.post('/classes/create', (req, res) => {
-    const { class_name, schedule_time, capacity, trainer_id } = req.body;
+    const { class_name, schedule, capacity, trainer_id } = req.body;
 
     const trainerExists = trainers.some(t => t.trainer_id == trainer_id);
     if (!trainerExists) {
@@ -280,7 +293,7 @@ app.post('/classes/create', (req, res) => {
     const newItem = {
         class_id: getNextId(classes, 'class_id'),
         class_name,
-        schedule_time,
+        schedule,
         capacity: parseInt(capacity) || 0,
         trainer_id: parseInt(trainer_id)
     };
@@ -289,13 +302,13 @@ app.post('/classes/create', (req, res) => {
 });
 
 app.post('/classes/update', (req, res) => {
-    const { class_id, class_name, schedule_time, capacity, trainer_id } = req.body;
+    const { class_id, class_name, schedule, capacity, trainer_id } = req.body;
     const index = classes.findIndex(c => c.class_id == class_id);
     if (index !== -1) {
         classes[index] = {
             ...classes[index],
             class_name,
-            schedule_time,
+            schedule,
             capacity: parseInt(capacity) || 0,
             trainer_id: parseInt(trainer_id)
         };
@@ -374,7 +387,7 @@ app.get('/payments', (req, res) => {
 });
 
 app.post('/payments/create', (req, res) => {
-    const { member_id, amount, payment_date, method } = req.body;
+    const { member_id, amount, payment_date, payment_method } = req.body;
 
     const memberExists = members.some(m => m.member_id == member_id);
     if (!memberExists) return res.redirect('/payments?error=Invalid Member');
@@ -384,14 +397,14 @@ app.post('/payments/create', (req, res) => {
         member_id: parseInt(member_id),
         amount: parseFloat(amount),
         payment_date: payment_date || new Date().toISOString().split('T')[0],
-        method
+        payment_method
     };
     payments.push(newItem);
     res.redirect('/payments?success=Payment Recorded Successfully');
 });
 
 app.post('/payments/update', (req, res) => {
-    const { payment_id, member_id, amount, payment_date, method } = req.body;
+    const { payment_id, member_id, amount, payment_date, payment_method } = req.body;
     const index = payments.findIndex(p => p.payment_id == payment_id);
     if (index !== -1) {
         payments[index] = {
@@ -399,7 +412,7 @@ app.post('/payments/update', (req, res) => {
             member_id: parseInt(member_id),
             amount: parseFloat(amount),
             payment_date,
-            method
+            payment_method
         };
     }
     res.redirect('/payments?success=Payment Updated Successfully');
@@ -438,13 +451,13 @@ app.get('/reports', (req, res) => {
 
     const membershipCounts = {};
     members.forEach(m => {
-        const mName = memberships.find(ms => ms.membership_id === m.membership_id)?.membership_name || 'Unknown';
+        const mName = memberships.find(ms => ms.membership_id === m.membership_id)?.type || 'Unknown';
         membershipCounts[mName] = (membershipCounts[mName] || 0) + 1;
     });
 
     const trainerWorkload = trainers.map(t => {
         const count = classes.filter(c => c.trainer_id === t.trainer_id).length;
-        return { name: `${t.f_name} ${t.l_name}`, count };
+        return { name: `${t.first_name} ${t.last_name}`, count };
     });
 
     const inactiveMembers = members.filter(m => !enrollments.some(e => e.member_id === m.member_id));
@@ -486,10 +499,10 @@ app.post('/reports/sp-demo', (req, res) => {
         : 'N/A';
 
     const result = {
-        member_name: `${member.f_name} ${member.l_name}`,
+        member_name: `${member.first_name} ${member.last_name}`,
         total_paid: totalPaid,
         payment_count: paymentCount,
-        last_payment_date: lastPayment
+        last_payment_date: formatDate(lastPayment)
     };
 
     res.redirect(`/reports?sp_result=${encodeURIComponent(JSON.stringify(result))}`);
