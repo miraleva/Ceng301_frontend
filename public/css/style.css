@@ -381,7 +381,23 @@ body.login-page {
     flex-wrap: wrap;
 }
 
+/* --- Filter Select --- */
+.filter-select {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    background-color: white;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+    cursor: pointer;
+}
 
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
 
 /* --- Dashboard Lower Section --- */
 .dashboard-lower {
