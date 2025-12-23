@@ -15,9 +15,55 @@
         </div>
     </div>
 
-    <!-- Placeholder for Recent Activity or other dashboard widgets -->
-    <div style="background: white; padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border-color); text-align: center; color: #6b7280;">
-        <p>Shortcuts and Recent Activity will appear here.</p>
+    <!-- Dashboard Lowers: Quick Actions & Recent Activity -->
+    <div class="dashboard-lower">
+        
+        <!-- Quick Actions Panel -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions-grid">
+                    <a href="/members" class="btn btn-primary" style="justify-content: center;">
+                        + Add Member
+                    </a>
+                    <a href="/payments" class="btn btn-primary" style="justify-content: center;">
+                        $ Record Payment
+                    </a>
+                    <a href="/enrollments" class="btn btn-primary" style="justify-content: center;">
+                        ✎ New Enrollment
+                    </a>
+                    <a href="/reports" class="btn btn-primary" style="justify-content: center;">
+                        📊 View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Panel -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <ul class="activity-list">
+                    <% recentActivity.forEach(item => { %>
+                        <li>
+                            <div class="activity-info">
+                                <span class="badge badge-<%= item.type.toLowerCase() %>"><%= item.type %></span>
+                                <span class="activity-text"><%= item.text %></span>
+                            </div>
+                            <span class="activity-date"><%= item.date %></span>
+                        </li>
+                    <% }) %>
+                    <% if(recentActivity.length === 0) { %>
+                        <li style="color: #9ca3af; font-style: italic; justify-content: center;">No recent activity.</li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+
     </div>
 
 <%- include('../partials/layout_end') %>

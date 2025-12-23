@@ -13,7 +13,7 @@
             <select id="membershipFilter" class="filter-select">
                 <option value="all">All Memberships</option>
                 <% memberships.forEach(m => { %>
-                    <option value="<%= m.membership_name.toLowerCase() %>"><%= m.membership_name %></option>
+                    <option value="<%= m.type.toLowerCase() %>"><%= m.type %></option>
                 <% }) %>
             </select>
         </div>
@@ -28,9 +28,11 @@
                 <tr>
                     <th>ID</th>
                     <th>Full Name</th>
+                    <th>Gender</th>
                     <th>Date of Birth</th>
                     <th>Age</th>
                     <th>Membership</th>
+                    <th>Joined</th>
                     <th>Contact</th>
                     <th>Actions</th>
                 </tr>
@@ -43,14 +45,16 @@
                 %>
                 <tr>
                     <td>#<%= m.member_id %></td>
-                    <td><%= m.f_name %> <%= m.l_name %></td>
-                    <td><%= m.date_of_birth %></td>
+                    <td><%= m.first_name %> <%= m.last_name %></td>
+                    <td><%= m.gender %></td>
+                    <td><%= formatDate(m.date_of_birth) %></td>
                     <td>
                         <span class="age-display" data-dob="<%= m.date_of_birth %>">
                             <%= age %>
                         </span>
                     </td>
-                    <td data-type="membership"><%= memType ? memType.membership_name : 'Unknown' %></td>
+                    <td data-type="membership"><%= memType ? memType.type : 'Unknown' %></td>
+                    <td><%= formatDate(m.registration_date) %></td>
                     <td>
                         <% if(m.phone) { %> <div>📞 <%= m.phone %></div> <% } %>
                         <% if(m.email) { %> <div style="font-size:0.75rem; color:#6b7280"><%= m.email %></div> <% } %>
@@ -86,24 +90,38 @@
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" name="f_name" class="form-control" required>
+                        <input type="text" name="first_name" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" name="l_name" class="form-control" required>
+                        <input type="text" name="last_name" class="form-control" required>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select name="gender" class="form-control" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label>Date of Birth</label>
                     <input type="date" name="date_of_birth" class="form-control" required>
                 </div>
+                
+                <div class="form-group">
+                    <label>Registration Date</label>
+                    <input type="date" name="registration_date" class="form-control">
+                </div>
 
                 <div class="form-group">
                     <label>Membership Tier</label>
                     <select name="membership_id" class="form-control" required>
                         <% memberships.forEach(m => { %>
-                            <option value="<%= m.membership_id %>"><%= m.membership_name %> ($<%= m.price %>)</option>
+                            <option value="<%= m.membership_id %>"><%= m.type %> ($<%= m.price %>)</option>
                         <% }) %>
                     </select>
                 </div>

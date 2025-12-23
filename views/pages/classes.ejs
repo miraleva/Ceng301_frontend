@@ -12,7 +12,7 @@
             <select id="trainerFilter" class="filter-select">
                 <option value="all">All Trainers</option>
                 <% trainers.forEach(t => { %>
-                    <option value="<%= t.f_name.toLowerCase() %>"><%= t.f_name %> <%= t.l_name %></option>
+                    <option value="<%= t.first_name.toLowerCase() %>"><%= t.first_name %> <%= t.last_name %></option>
                 <% }) %>
             </select>
         </div>
@@ -40,9 +40,9 @@
                 <tr>
                     <td>#<%= c.class_id %></td>
                     <td><%= c.class_name %></td>
-                    <td><%= c.schedule_time %></td>
+                    <td><%= formatDate(c.schedule) %></td>
                     <td><%= c.capacity %></td>
-                    <td data-type="trainer"><%= trainer ? (trainer.f_name + ' ' + trainer.l_name) : 'Assignments Pending' %></td>
+                    <td data-type="trainer"><%= trainer ? (trainer.first_name + ' ' + trainer.last_name) : 'Assignments Pending' %></td>
                     <td>
                         <button class="btn btn-sm btn-secondary btn-edit" 
                                 data-modal-target="classModal" 
@@ -77,15 +77,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Schedule Time</label>
-                    <input type="text" name="schedule_time" class="form-control" placeholder="e.g. Mon 10:00 AM">
+                    <label>Schedule</label>
+                    <input type="date" name="schedule" class="form-control" required>
                 </div>
 
                 <div class="form-group">
                     <label>Trainer</label>
                     <select name="trainer_id" class="form-control" required>
                         <% trainers.forEach(t => { %>
-                            <option value="<%= t.trainer_id %>"><%= t.f_name %> <%= t.l_name %> (<%= t.specialization %>)</option>
+                            <option value="<%= t.trainer_id %>"><%= t.first_name %> <%= t.last_name %> (<%= t.specialization %>)</option>
                         <% }) %>
                     </select>
                 </div>

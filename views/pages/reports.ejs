@@ -43,10 +43,10 @@
             <div class="report-card-title">Oldest Member</div>
             <% if(reportData.oldestMember) { %>
                 <div class="report-value-lg">
-                    <%= reportData.oldestMember.f_name %> <%= reportData.oldestMember.l_name %>
+                    <%= reportData.oldestMember.first_name %> <%= reportData.oldestMember.last_name %>
                 </div>
                 <div class="report-sub">
-                    Born: <%= reportData.oldestMember.date_of_birth %>
+                    Born: <%= formatDate(reportData.oldestMember.date_of_birth) %>
                 </div>
             <% } else { %>
                 <div class="report-value-lg">-</div>
@@ -119,7 +119,7 @@
                         <label style="display:block; font-size:0.85rem; margin-bottom:0.5rem; font-weight:500;">Select Member</label>
                         <select name="member_id" class="form-control">
                             <% members.forEach(m => { %>
-                                <option value="<%= m.member_id %>"><%= m.f_name %> <%= m.l_name %></option>
+                                <option value="<%= m.member_id %>"><%= m.first_name %> <%= m.last_name %></option>
                             <% }) %>
                         </select>
                     </div>
@@ -139,6 +139,9 @@
 
                         <strong style="color:#6b7280;">Transactions:</strong>
                         <span><%= spResult.payment_count %></span>
+
+                        <strong style="color:#6b7280;">Last Payment:</strong>
+                        <span><%= spResult.last_payment_date %></span>
                     </div>
                 <% } else { %>
                     <div style="text-align:center; color:#9ca3af; padding:1rem; font-style: italic;">
