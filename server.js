@@ -54,8 +54,8 @@ let trainers = [
 ];
 
 let classes = [
-    { class_id: 1, class_name: 'Morning Boxing', schedule: '2025-12-01 08:00', capacity: 20, trainer_id: 1 },
-    { class_id: 2, class_name: 'Evening Yoga', schedule: '2025-12-01 18:00', capacity: 15, trainer_id: 2 }
+    { class_id: 1, class_name: 'Morning Boxing', schedule: '2025-12-01', capacity: 20, trainer_id: 1 },
+    { class_id: 2, class_name: 'Evening Yoga', schedule: '2025-12-01', capacity: 15, trainer_id: 2 }
 ];
 
 let enrollments = [

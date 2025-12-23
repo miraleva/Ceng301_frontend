@@ -75,7 +75,7 @@
                     <label>Select Class</label>
                     <select name="class_id" class="form-control" required>
                         <% classes.forEach(c => { %>
-                            <option value="<%= c.class_id %>"><%= c.class_name %> (<%= c.schedule %>)</option>
+                            <option value="<%= c.class_id %>"><%= c.class_name %> (<%= formatDate(c.schedule) %>)</option>
                         <% }) %>
                     </select>
                 </div>
