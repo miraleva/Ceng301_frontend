@@ -3,12 +3,11 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// --- CONFIGURATION ---
-// Set to true to switch to Backend API calls.
-// Set to false to use local mock data.
+// Configuration
+// Toggle between API and local mock data
 const USE_API = false;
 
-// Set view engine to EJS
+// View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -18,12 +17,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Middleware to parse body
 app.use(express.urlencoded({ extended: true }));
 
-// --- HELPERS ---
+// Helpers
 const getNextId = (arr, idField) => {
     return arr.length > 0 ? Math.max(...arr.map(item => item[idField])) + 1 : 1;
 };
 
-// Format Date Helper (DD-MM-YYYY)
+// Date formatter (DD-MM-YYYY)
 const formatDate = (dateString, fallback = '') => {
     if (!dateString) return fallback;
     const d = new Date(dateString);
@@ -34,14 +33,14 @@ const formatDate = (dateString, fallback = '') => {
     return `${day}-${month}-${year}`;
 };
 
-// Make helper available to all views
+// Make helper available globally
 app.use((req, res, next) => {
     res.locals.formatDate = formatDate;
     next();
 });
 
-// --- MOCK DATA ---
-// These arrays act as our temporary database when USE_API is false.
+// Mock Data
+// Used when USE_API is false
 let memberships = [
     { membership_id: 1, type: 'Silver', duration: 30, price: 300 },
     { membership_id: 2, type: 'Gold', duration: 90, price: 800 },
@@ -74,7 +73,7 @@ let payments = [
     { payment_id: 2, member_id: 2, amount: 300, payment_date: '2025-11-21', payment_method: 'Cash' }
 ];
 
-// --- ROUTES ---
+// Routes
 
 app.get('/', (req, res) => {
     res.redirect('/login');
@@ -84,7 +83,7 @@ app.get('/login', (req, res) => {
     res.render('pages/login');
 });
 
-// --- DASHBOARD ---
+// Dashboard
 app.get('/dashboard', async (req, res) => {
     let statsData, activityData;
 
@@ -96,7 +95,7 @@ app.get('/dashboard', async (req, res) => {
         statsData = { totalMembers: 0, activeClasses: 0, monthlyRevenue: 0 }; // Placeholder
         activityData = []; // Placeholder
     } else {
-        // Mock Logic
+        // Mock data logic
         statsData = {
             totalMembers: members.length,
             activeClasses: classes.length,
@@ -139,7 +138,7 @@ app.get('/dashboard', async (req, res) => {
     });
 });
 
-// --- MEMBERS ROUTES ---
+// Members
 app.get('/members', async (req, res) => {
     const error = req.query.error || null;
     const success = req.query.success || null;
@@ -210,7 +209,7 @@ app.post('/members/delete', async (req, res) => {
         // TODO: DELETE FROM API
         // await axios.delete(`/api/members/${member_id}`);
     } else {
-        // Check constraints
+        // Check constraints before delete
         const hasEnrollments = enrollments.some(e => e.member_id == member_id);
         const hasPayments = payments.some(p => p.member_id == member_id);
 
@@ -222,7 +221,7 @@ app.post('/members/delete', async (req, res) => {
     res.redirect('/members?success=Deleted Member Successfully');
 });
 
-// --- MEMBERSHIPS ROUTES ---
+// Memberships
 app.get('/memberships', async (req, res) => {
     const error = req.query.error || null;
     const success = req.query.success || null;
@@ -286,7 +285,7 @@ app.post('/memberships/delete', async (req, res) => {
     res.redirect('/memberships?success=Deleted Membership Successfully');
 });
 
-// --- TRAINERS ROUTES ---
+// Trainers
 app.get('/trainers', async (req, res) => {
     const error = req.query.error || null;
     const success = req.query.success || null;
@@ -349,7 +348,7 @@ app.post('/trainers/delete', async (req, res) => {
     res.redirect('/trainers?success=Deleted Trainer Successfully');
 });
 
-// --- CLASSES ROUTES ---
+// Classes
 app.get('/classes', async (req, res) => {
     const error = req.query.error || null;
     const success = req.query.success || null;
@@ -430,7 +429,7 @@ app.post('/classes/delete', async (req, res) => {
     res.redirect('/classes?success=Deleted Class Successfully');
 });
 
-// --- ENROLLMENTS ROUTES ---
+// Enrollments
 app.get('/enrollments', async (req, res) => {
     const error = req.query.error || null;
     const success = req.query.success || null;
@@ -497,7 +496,7 @@ app.post('/enrollments/delete', async (req, res) => {
     res.redirect('/enrollments?success=Enrollment Removed Successfully');
 });
 
-// --- PAYMENTS ROUTES ---
+// Payments
 app.get('/payments', async (req, res) => {
     const error = req.query.error || null;
     const success = req.query.success || null;
@@ -572,7 +571,7 @@ app.post('/payments/delete', async (req, res) => {
     res.redirect('/payments?success=Payment Deleted Successfully');
 });
 
-// --- REPORTS ROUTES ---
+// Reports
 app.get('/reports', async (req, res) => {
     let spResult = null;
     if (req.query.sp_result) {
@@ -596,7 +595,8 @@ app.get('/reports', async (req, res) => {
         };
     } else {
         localMembers = members;
-        // Computations
+
+        // Report calculations
         const oldestMember = [...members].sort((a, b) => new Date(a.date_of_birth) - new Date(b.date_of_birth))[0];
 
         const classCounts = {};
