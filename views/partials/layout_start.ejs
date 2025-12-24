@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Gym Manager' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <%- include('sidebar') %>
+
+        <div class="main-content">
+            <!-- Header -->
+            <%- include('header') %>
+
+            <!-- Page Content -->
+            <main class="content-wrapper">

@@ -1,0 +1,155 @@
+<%- include('../partials/layout_start') %>
+
+    <div class="reports-header" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700;">System Reports</h2>
+    </div>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success"><%= success %></div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <!-- ROW 1: KPI SUMMARY -->
+    <div class="report-grid-3">
+        
+        <!-- 1. Total Revenue -->
+        <div class="report-card">
+            <div class="report-card-title">Total Revenue</div>
+            <div class="report-value-lg" style="color: var(--success-color);">
+                $<%= reportData.totalRevenue.toLocaleString() %>
+            </div>
+            <div class="report-sub">All time payments</div>
+        </div>
+
+        <!-- 2. Most Popular Class -->
+        <div class="report-card">
+            <div class="report-card-title">Most Popular Class</div>
+            <% if(reportData.popularClass) { %>
+                <div class="report-value-lg" style="color: var(--primary-color);">
+                    <%= reportData.popularClass.class_name %>
+                </div>
+                <div class="report-sub">
+                    <%= reportData.popularClass.count %> enrollments
+                </div>
+            <% } else { %>
+                <div class="report-value-lg">-</div>
+            <% } %>
+        </div>
+
+        <!-- 3. Oldest Member -->
+        <div class="report-card">
+            <div class="report-card-title">Oldest Member</div>
+            <% if(reportData.oldestMember) { %>
+                <div class="report-value-lg">
+                    <%= reportData.oldestMember.first_name %> <%= reportData.oldestMember.last_name %>
+                </div>
+                <div class="report-sub">
+                    Born: <%= formatDate(reportData.oldestMember.date_of_birth) %>
+                </div>
+            <% } else { %>
+                <div class="report-value-lg">-</div>
+            <% } %>
+        </div>
+
+    </div>
+
+    <!-- ROW 2: DETAILED METRICS -->
+    <div class="report-grid-3">
+
+        <!-- 4. Inactive Members -->
+        <div class="report-card">
+            <div class="report-card-title">Inactive Members</div>
+            <div class="report-value-lg" style="color: var(--danger-color);">
+                <%= reportData.inactiveMembers.length %>
+            </div>
+            <div class="report-sub">Members with 0 enrollments</div>
+        </div>
+
+        <!-- 5. Membership Distribution -->
+        <div class="report-card">
+            <div class="report-card-title">Membership Distribution</div>
+            <ul class="clean-list">
+                <% Object.keys(reportData.membershipCounts).forEach(key => { %>
+                    <li>
+                        <span><%= key %></span>
+                        <span class="clean-tag"><%= reportData.membershipCounts[key] %></span>
+                    </li>
+                <% }) %>
+                <% if(Object.keys(reportData.membershipCounts).length === 0) { %>
+                    <li style="justify-content:center; color:#9ca3af;">No data</li>
+                <% } %>
+            </ul>
+        </div>
+
+        <!-- 6. Trainer Workload -->
+        <div class="report-card">
+            <div class="report-card-title">Trainer Workload</div>
+            <ul class="clean-list">
+                <% reportData.trainerWorkload.forEach(item => { %>
+                    <li>
+                        <span><%= item.name %></span>
+                        <span class="clean-tag"><%= item.count %> Classes</span>
+                    </li>
+                <% }) %>
+                <% if(reportData.trainerWorkload.length === 0) { %>
+                    <li style="justify-content:center; color:#9ca3af;">No data</li>
+                <% } %>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ROW 3: SP DEMO -->
+    <div class="report-card" style="margin-top: 2rem;">
+        <div class="report-card-title" style="border-bottom:none; margin-bottom:0;">
+            Stored Procedure / Function Demo (PostgreSQL)
+        </div>
+        <p style="color:#6b7280; font-family:monospace; font-size:0.85rem; margin-bottom:1.5rem;">
+            FUNCTION calculate_member_lifetime_value(p_member_id)
+        </p>
+
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            
+            <!-- Input -->
+            <div style="flex: 1; min-width: 250px;">
+                <form action="/reports/sp-demo" method="POST">
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block; font-size:0.85rem; margin-bottom:0.5rem; font-weight:500;">Select Member</label>
+                        <select name="member_id" class="form-control">
+                            <% members.forEach(m => { %>
+                                <option value="<%= m.member_id %>"><%= m.first_name %> <%= m.last_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Execute Function</button>
+                </form>
+            </div>
+
+            <!-- Output -->
+            <div style="flex: 1; min-width: 250px; background:#f9fafb; padding:1.5rem; border-radius:0.5rem; border:1px dashed #e5e7eb;">
+                <% if(spResult) { %>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; font-size:0.9rem;">
+                        <strong style="color:#6b7280;">Member:</strong>
+                        <span><%= spResult.member_name %></span>
+                        
+                        <strong style="color:#6b7280;">Total Paid:</strong>
+                        <span style="color:var(--success-color); font-weight:bold;">$<%= spResult.total_paid.toFixed(2) %></span>
+
+                        <strong style="color:#6b7280;">Transactions:</strong>
+                        <span><%= spResult.payment_count %></span>
+
+                        <strong style="color:#6b7280;">Last Payment:</strong>
+                        <span><%= spResult.last_payment_date %></span>
+                    </div>
+                <% } else { %>
+                    <div style="text-align:center; color:#9ca3af; padding:1rem; font-style: italic;">
+                        Result will appear here...
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+<%- include('../partials/layout_end') %>
