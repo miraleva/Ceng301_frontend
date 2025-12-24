@@ -46,7 +46,7 @@
                 <tr>
                     <td>#<%= m.member_id %></td>
                     <td><%= m.first_name %> <%= m.last_name %></td>
-                    <td><%= m.gender %></td>
+                    <td><%= m.gender === 'M' ? 'Male' : (m.gender === 'F' ? 'Female' : 'Other') %></td>
                     <td><%= formatDate(m.date_of_birth) %></td>
                     <td>
                         <span class="age-display" data-dob="<%= m.date_of_birth %>">
@@ -101,9 +101,9 @@
                 <div class="form-group">
                     <label>Gender</label>
                     <select name="gender" class="form-control" required>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                        <option value="O">Other</option>
                     </select>
                 </div>
 

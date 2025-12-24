@@ -49,9 +49,9 @@ let memberships = [
 ];
 
 let members = [
-    { member_id: 1, first_name: 'John', last_name: 'Doe', gender: 'Male', date_of_birth: '1990-05-15', registration_date: '2025-01-10', membership_id: 2, phone: '555-0101', email: 'john@example.com' },
-    { member_id: 2, first_name: 'Jane', last_name: 'Smith', gender: 'Female', date_of_birth: '1985-08-22', registration_date: '2025-02-01', membership_id: 1, phone: '555-0102', email: 'jane@example.com' },
-    { member_id: 3, first_name: 'Ali', last_name: 'Veli', gender: 'Male', date_of_birth: '2000-01-10', registration_date: '2025-03-05', membership_id: 3, phone: '555-0103', email: 'ali@example.com' }
+    { member_id: 1, first_name: 'John', last_name: 'Doe', gender: 'M', date_of_birth: '1990-05-15', registration_date: '2025-01-10', membership_id: 2, phone: '555-0101', email: 'john@example.com' },
+    { member_id: 2, first_name: 'Jane', last_name: 'Smith', gender: 'F', date_of_birth: '1985-08-22', registration_date: '2025-02-01', membership_id: 1, phone: '555-0102', email: 'jane@example.com' },
+    { member_id: 3, first_name: 'Ali', last_name: 'Veli', gender: 'M', date_of_birth: '2000-01-10', registration_date: '2025-03-05', membership_id: 3, phone: '555-0103', email: 'ali@example.com' }
 ];
 
 let trainers = [
@@ -70,7 +70,7 @@ let enrollments = [
 ];
 
 let payments = [
-    { payment_id: 1, member_id: 1, amount: 800, payment_date: '2025-11-20', payment_method: 'Card' },
+    { payment_id: 1, member_id: 1, amount: 800, payment_date: '2025-11-20', payment_method: 'Credit Card' },
     { payment_id: 2, member_id: 2, amount: 300, payment_date: '2025-11-21', payment_method: 'Cash' }
 ];
 
