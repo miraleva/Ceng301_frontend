@@ -39,7 +39,7 @@
             </thead>
             <tbody>
                 <% members.forEach(m => { 
-                    // Match membership name
+                    // Get membership type
                     const memType = memberships.find(x => x.membership_id == m.membership_id);
                     const age = new Date().getFullYear() - new Date(m.date_of_birth).getFullYear(); // Simple calc
                 %>
@@ -77,7 +77,7 @@
         </table>
     </div>
 
-    <!-- Add/Edit Member Modal -->
+    <!-- Member Modal -->
     <div id="memberModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -144,7 +144,7 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Modal -->
     <div id="deleteModal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header">

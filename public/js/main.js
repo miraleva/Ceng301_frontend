@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Modal Logic ---
+    // Modal handling
     const modals = document.querySelectorAll('.modal');
     const closeButtons = document.querySelectorAll('.close-modal');
     const openModalButtons = document.querySelectorAll('[data-modal-target]');
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Dynamic Data Filling for Edit/Delete ---
+    // Dynamic data population
 
     // Edit Buttons
     document.querySelectorAll('.btn-edit').forEach(btn => {
@@ -57,8 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Switch form action to update
-            // Note: In a real app we might change the method or action URL.
-            // Here we just ensure the backend route handles the Update based on ID presence or specific route.
             const form = modal.querySelector('form');
             const resource = form.getAttribute('data-resource'); // e.g., 'members'
             if (resource) {
@@ -67,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Add Buttons (Reset action to create)
+    // Add Buttons
     document.querySelectorAll('.btn-add').forEach(btn => {
         btn.addEventListener('click', () => {
             const modalId = btn.getAttribute('data-modal-target');
@@ -94,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // --- Util: Filter Table ---
+    // Table search
     const searchInput = document.getElementById('tableSearch');
     if (searchInput) {
         searchInput.addEventListener('keyup', function () {
@@ -108,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Util: Membership Filter ---
+    // Membership filter
     const filterDropdown = document.getElementById('membershipFilter');
     if (filterDropdown) {
         filterDropdown.addEventListener('change', function () {
@@ -129,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// --- Constants & Utils ---
+// Utilities
 function calculateAge(dobString) {
     if (!dobString) return '';
     const today = new Date();

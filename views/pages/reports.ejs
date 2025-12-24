@@ -11,10 +11,10 @@
         <div class="alert alert-error"><%= error %></div>
     <% } %>
 
-    <!-- ROW 1: KPI SUMMARY -->
+    <!-- KPI Summary -->
     <div class="report-grid-3">
         
-        <!-- 1. Total Revenue -->
+        <!-- Details: Revenue -->
         <div class="report-card">
             <div class="report-card-title">Total Revenue</div>
             <div class="report-value-lg" style="color: var(--success-color);">
@@ -23,7 +23,7 @@
             <div class="report-sub">All time payments</div>
         </div>
 
-        <!-- 2. Most Popular Class -->
+        <!-- Details: Popular Class -->
         <div class="report-card">
             <div class="report-card-title">Most Popular Class</div>
             <% if(reportData.popularClass) { %>
@@ -38,7 +38,7 @@
             <% } %>
         </div>
 
-        <!-- 3. Oldest Member -->
+        <!-- Details: Oldest Member -->
         <div class="report-card">
             <div class="report-card-title">Oldest Member</div>
             <% if(reportData.oldestMember) { %>
@@ -55,10 +55,10 @@
 
     </div>
 
-    <!-- ROW 2: DETAILED METRICS -->
+    <!-- Detailed Metrics -->
     <div class="report-grid-3">
 
-        <!-- 4. Inactive Members -->
+        <!-- Details: Inactive -->
         <div class="report-card">
             <div class="report-card-title">Inactive Members</div>
             <div class="report-value-lg" style="color: var(--danger-color);">
@@ -67,7 +67,7 @@
             <div class="report-sub">Members with 0 enrollments</div>
         </div>
 
-        <!-- 5. Membership Distribution -->
+        <!-- Details: Membership Distribution -->
         <div class="report-card">
             <div class="report-card-title">Membership Distribution</div>
             <ul class="clean-list">
@@ -83,7 +83,7 @@
             </ul>
         </div>
 
-        <!-- 6. Trainer Workload -->
+        <!-- Details: Trainer Workload -->
         <div class="report-card">
             <div class="report-card-title">Trainer Workload</div>
             <ul class="clean-list">
@@ -101,7 +101,7 @@
 
     </div>
 
-    <!-- ROW 3: SP DEMO -->
+    <!-- Stored Procedure Demo -->
     <div class="report-card" style="margin-top: 2rem;">
         <div class="report-card-title" style="border-bottom:none; margin-bottom:0;">
             Stored Procedure / Function Demo (PostgreSQL)
@@ -112,7 +112,7 @@
 
         <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
             
-            <!-- Input -->
+            <!-- Selection form -->
             <div style="flex: 1; min-width: 250px;">
                 <form action="/reports/sp-demo" method="POST">
                     <div style="margin-bottom:1rem;">
@@ -127,7 +127,7 @@
                 </form>
             </div>
 
-            <!-- Output -->
+            <!-- Result display -->
             <div style="flex: 1; min-width: 250px; background:#f9fafb; padding:1.5rem; border-radius:0.5rem; border:1px dashed #e5e7eb;">
                 <% if(spResult) { %>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; font-size:0.9rem;">
